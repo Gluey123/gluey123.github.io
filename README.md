@@ -1,2 +1,2 @@
-# Gluey123.github.io
+# gluey123.github.io
 Personal Website

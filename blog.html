@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Writeups Colby</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <div class="bg-texture"></div>
+
+  <main class="blog-page">
+
+    <a class="blog-back" href="index.html">← back</a>
+
+    <h1 class="blog-heading">Writeups</h1>
+
+    <!-- ═══════════════════════════════════════════════════
+         HOW TO ADD A NEW POST:
+         1. Copy  blog/post-template.html
+         2. Rename it  blog/your-post-name.html
+         3. Fill in the date, title, and content
+         4. Copy one <li class="entry"> block below, newest first,
+            and update the date, title, href, and summary.
+         No build step, no config.
+    ══════════════════════════════════════════════════════ -->
+
+    <ul class="entry-list">
+
+      <li class="entry">
+        <a class="entry-link" href="blog/my-first-post.html">
+          <span class="entry-date">Apr 2026</span>
+          <span class="entry-body">
+            <span class="entry-title">My First Post</span>
+            <span class="entry-desc">Shipping something imperfect taught me more than planning the perfect version ever could.</span>
+          </span>
+        </a>
+      </li>
+
+      <!-- add more posts above this line, newest first -->
+
+    </ul>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,13 +1,8 @@
 ---
-
-title: Intro to Kerberos Roasting & Active Directory Abuse
-
-author: Glueyy - Formatted with Gemini
-
+title: "Intro to Kerberos Roasting & Active Directory Abuse"
+author: "Glueyy - Formatted with Gemini"
 date: 2026-06-15
-
-description: Sample first writeup - Taken key points from the Hack Smarter Guided Lab: Kerberoasting.
-
+description: "Sample first writeup - Taken key points from the Hack Smarter Guided Lab: Kerberoasting."
 ---
 
 This is a jumble of notes and key highlighted points taken and condensed for the Hack smarter lab: Guided Lab: Kerberoasting (Easy)

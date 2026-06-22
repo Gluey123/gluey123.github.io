@@ -1,7 +1,13 @@
 ---
-Intro to Kerberos Roasting & Active Directory Abuse
 
-**Author:** @Glueyy | **Date:** 2026-06-15
+title: Intro to Kerberos Roasting & Active Directory Abuse
+
+author: Glueyy - Formatted with Gemini
+
+date: 2026-06-15
+
+description: Sample first writeup - Taken key points from the Hack Smarter Guided Lab: Kerberoasting.
+
 ---
 
 This is a jumble of notes and key highlighted points taken and condensed for the Hack smarter lab: Guided Lab: Kerberoasting (Easy)
@@ -122,3 +128,7 @@ Extracting hashes is trivial if the network is misconfigured. To combat Kerberos
 - **Enforce Maximum Password Entropy:** If legacy technical debt prevents the use of a gMSA and a traditional user account _must_ be used, treat that password like a static encryption key. It should be fully randomized and at least 25 to 30 characters in length.
     
 - **Deprecate RC4 Encryption:** Older AD environments default to RC4 encryption for tickets, which modern GPUs can chew through rapidly. Audit your environment and enforce **AES-256** encryption for Kerberos. AES significantly increases the computational overhead required for offline cracking, rendering standard dictionary attacks highly inefficient.
+
+- Completed lab link below
+
+-  https://www.hacksmarter.org/completion/f0c174dd64b7d2ff 

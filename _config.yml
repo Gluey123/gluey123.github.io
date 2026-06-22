@@ -1,0 +1,26 @@
+title: Colby
+description: Cybersecurity student focused on offensive security, pentesting, Active Directory, and web app security.
+
+collections:
+  blogs:
+    output: true
+    permalink: /blog/:name/
+  writeups:
+    output: true
+    permalink: /writeups/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: "blogs"
+    values:
+      layout: "post"
+      section: "blog"
+      section_url: "/blog.html"
+  - scope:
+      path: ""
+      type: "writeups"
+    values:
+      layout: "post"
+      section: "writeups"
+      section_url: "/writeups.html"

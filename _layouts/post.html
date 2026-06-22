@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ page.title }} Colby</title>
+  <link rel="stylesheet" href="{{ '/styles.css' | relative_url }}" />
+</head>
+<body>
+
+  <div class="bg-texture"></div>
+
+  <main class="post-page">
+
+    <a class="blog-back" href="{{ page.section_url | relative_url }}">back to {{ page.section }}</a>
+
+    <p class="post-page-date">{{ page.date | date: "%b %Y" }}</p>
+    <h1 class="post-page-title">{{ page.title }}</h1>
+
+    <div class="post-content">
+      {{ content }}
+    </div>
+
+    <div class="post-footer-nav">
+      <a href="{{ page.section_url | relative_url }}">back to {{ page.section }}</a>
+    </div>
+
+  </main>
+
+</body>
+</html>

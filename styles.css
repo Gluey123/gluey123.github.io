@@ -1,6 +1,4 @@
-/* ─────────────────────────────────────────────
-   Base
-───────────────────────────────────────────── */
+
 :root {
   --bg:         #0c0c0c;
   --text:       #f0f0f0;
@@ -25,15 +23,13 @@ body {
   color: var(--text);
   font-family: var(--font);
   font-size: 1.04rem;
-  font-weight: 400;          /* fixed: was 700 (everything bold) */
+  font-weight: 400;          
   line-height: 1.7;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* ─────────────────────────────────────────────
-   Background texture
-───────────────────────────────────────────── */
+
 .bg-texture {
   position: fixed;
   inset: 0;
@@ -45,9 +41,57 @@ body {
   z-index: 0;
 }
 
-/* ─────────────────────────────────────────────
-   Page column
-───────────────────────────────────────────── */
+
+.landing-page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.landing-block {
+  max-width: 44rem;
+  text-align: center;
+}
+
+.landing-block h1 {
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.landing-block p {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text);
+}
+
+.landing-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.4rem;
+}
+
+.landing-links a {
+  border: 1px solid var(--text);
+  color: var(--text);
+  font-size: 0.78rem;
+  line-height: 1;
+  padding: 0.55rem 0.75rem;
+  text-decoration: none;
+}
+
+.landing-links a:hover {
+  background: var(--text);
+  color: var(--bg);
+  text-decoration: none;
+}
+
 .page {
   position: relative;
   z-index: 1;
@@ -110,6 +154,14 @@ header { margin-bottom: 2.6rem; }
 ───────────────────────────────────────────── */
 .entry-list {
   list-style: none;
+}
+
+.empty-entry {
+  border-top: 1px solid var(--faint);
+  border-bottom: 1px solid var(--faint);
+  color: var(--dim);
+  font-size: 0.9rem;
+  padding: 1rem 0.3rem;
 }
 
 .entry {

@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blog Colby</title>
+  <title>Writeups Colby</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -16,10 +16,10 @@
 
     <a class="blog-back" href="index.html">← back</a>
 
-    <h1 class="blog-heading">Blog</h1>
+    <h1 class="blog-heading">Writeups</h1>
 
     <ul class="entry-list">
-      {% assign posts = site.blogs | sort: "date" | reverse %}
+      {% assign posts = site.writeups | sort: "date" | reverse %}
       {% for post in posts %}
       <li class="entry">
         <a class="entry-link" href="{{ post.url | relative_url }}">
@@ -33,12 +33,11 @@
         </a>
       </li>
       {% else %}
-      <li class="empty-entry">No blog posts yet.</li>
+      <li class="empty-entry">No writeups yet.</li>
       {% endfor %}
     </ul>
 
   </main>
 
-  <script src="script.js"></script>
 </body>
 </html>

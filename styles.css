@@ -34,7 +34,7 @@ body {
   position: fixed;
   inset: 0;
   background: url('assets/bg.png') center / cover no-repeat;
-  filter: blur(16px) brightness(0.40) saturate(0.75);
+  filter: blur(26px) brightness(0.40) saturate(0.75);
   opacity: 0.88;
   transform: scale(1.06);
   pointer-events: none;

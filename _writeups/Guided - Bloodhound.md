@@ -130,8 +130,6 @@ After I uploaded the file into BloodHound, we can see that it starts mapping nod
 
 Immediately, one thing stands out to me: our user has control over another account (a GenericAll edge from PENTEST to BACKUP_SVC), which usually means we may be able to perform an attack against that account.
 
-![[Pasted image 20260629152424.png]]
-
 ## The Challenge — Compromising the Domain Controller
 
 The goal: **What is the flag located at C:\Users\Administrator\Desktop\root.txt?**

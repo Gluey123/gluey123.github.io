@@ -18,16 +18,38 @@
 
     <h1 class="blog-heading">Writeups</h1>
 
+    {% assign all_tags = "" | split: "" %}
+    {% for post in site.writeups %}
+      {% if post.tags %}
+        {% assign all_tags = all_tags | concat: post.tags %}
+      {% endif %}
+    {% endfor %}
+    {% assign unique_tags = all_tags | uniq | sort %}
+
+    {% if unique_tags.size > 0 %}
+    <div class="tag-filters" role="group" aria-label="Filter writeups by tag">
+      <button type="button" class="tag-filter active" data-tag="all">All</button>
+      {% for tag in unique_tags %}
+      <button type="button" class="tag-filter" data-tag="{{ tag | slugify }}">{{ tag }}</button>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <ul class="entry-list">
+      <li class="empty-entry tag-no-match" style="display:none;">No writeups match this tag.</li>
+
       {% assign posts = site.writeups | sort: "date" | reverse %}
       {% for post in posts %}
-      <li class="entry">
+      <li class="entry" data-tags="{% for t in post.tags %}{{ t | slugify }} {% endfor %}">
         <a class="entry-link" href="{{ post.url | relative_url }}">
           <span class="entry-date">{{ post.date | date: "%b %Y" }}</span>
           <span class="entry-body">
             <span class="entry-title">{{ post.title }}</span>
             {% if post.description %}
             <span class="entry-desc">{{ post.description }}</span>
+            {% endif %}
+            {% if post.tags %}
+            <span class="entry-tags">{{ post.tags | join: " · " }}</span>
             {% endif %}
           </span>
         </a>
@@ -39,5 +61,6 @@
 
   </main>
 
+  <script src="script.js"></script>
 </body>
 </html>

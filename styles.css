@@ -152,6 +152,44 @@ header { margin-bottom: 2.6rem; }
 /* ─────────────────────────────────────────────
    Entry list shared by writeups + projects
 ───────────────────────────────────────────── */
+.tag-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.8rem;
+}
+
+.tag-filter {
+  background: none;
+  border: 1px solid var(--faint);
+  color: var(--dim);
+  font-family: inherit;
+  font-size: 0.74rem;
+  letter-spacing: 0.03em;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.tag-filter:hover {
+  border-color: var(--dim);
+  color: var(--text);
+}
+
+.tag-filter.active {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+.entry-tags {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-top: 0.35rem;
+}
+
 .entry-list {
   list-style: none;
 }

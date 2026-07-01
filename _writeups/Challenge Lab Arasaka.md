@@ -3,6 +3,7 @@ title: "Challenge Lab: Arasaka (Easy) - Arasaka"
 author: Glueyy
 date: 2026-06-15
 description: Concise/clean writeup of my solving for Arasaka Machine on hack smarter
+tags: ["Challenge"]
 ---
 
 ## Objective and Scope

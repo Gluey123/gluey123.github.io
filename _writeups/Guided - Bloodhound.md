@@ -3,6 +3,7 @@ title: "Guided Lab: Bloodhound"
 author: Glueyy
 date: 2026-06-29
 description: "HackSmarter - Guided Lab: Bloodhound - personal notes and thought process"
+tags: ["Guided Lab"]
 ---
 BloodHound uses a Neo4j graph database.
 

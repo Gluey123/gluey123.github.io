@@ -4,13 +4,13 @@ description: Cybersecurity student focused on offensive security, pentesting, Ac
 collections:
   blogs:
     output: true
-    permalink: /blog/:name/
+    permalink: /blog/:name.html
   writeups:
     output: true
-    permalink: /writeups/:name/
+    permalink: /writeups/:name.html
   reports:
     output: true
-    permalink: /reports/:name/
+    permalink: /reports/:name.html
 
 defaults:
   - scope:

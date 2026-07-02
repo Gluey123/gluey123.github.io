@@ -161,7 +161,7 @@ header { margin-bottom: 2.6rem; }
 
 .tag-filter {
   background: none;
-  border: 1px solid var(--faint);
+  border: 1px solid var(--dim);
   color: var(--dim);
   font-family: inherit;
   font-size: 0.74rem;

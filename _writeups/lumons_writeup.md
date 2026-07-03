@@ -6,7 +6,7 @@ share: true
 date: 2026-07-02
 description: This is a Concise writeup for the Medium Rated Lumons box in Hacksmarter
 tags:
-  - AD
+  - AD - Challenge
 ---
   
   

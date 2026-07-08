@@ -399,6 +399,14 @@ footer {
   color: var(--text);
 }
 
+.post-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.4rem auto;
+  border-radius: 4px;
+}
+
 .post-content ul,
 .post-content ol { margin: 0.8rem 0 1.2rem 1.4rem; }
 

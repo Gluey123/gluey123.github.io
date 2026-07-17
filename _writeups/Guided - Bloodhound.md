@@ -2,7 +2,7 @@
 title: "Guided Lab: Bloodhound"
 author: Glueyy
 date: 2026-06-29
-description: "HackSmarter - Guided Lab: Bloodhound - personal notes and thought process"
+description: "Walking BloodHound's attack-path graphs - collection, Cypher queries, and reading edges to find the route to Domain Admin."
 tags: ["Guided Lab"]
 ---
 BloodHound uses a Neo4j graph database.

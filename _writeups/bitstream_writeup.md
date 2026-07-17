@@ -4,15 +4,14 @@ slug: bitstream_writeup
 category: _writeups
 share: true
 date: 2026-07-08
-description: This is a writeup of the Bitstream range.
+description: "Full internal AD compromise: stored XSS → IDOR → MSSQL RCE → SeImpersonate (GodPotato) → Kerberoasting → GenericAll abuse → DCSync to Domain Admin."
 tags:
   - Challenge
   - AD
-  - webapp
-  - attack
-  - idor
-  - kerberoasting
-  - kerberoast
+  - Web App
+  - Attack
+  - IDOR
+  - Kerberoasting
 ---
 Condensed Summary with step-by-step at the very end!  
   

@@ -1,8 +1,8 @@
 ---
-title: "Challenge Lab: Arasaka (Easy) - Arasaka"
+title: "Challenge Lab: Arasaka (Easy)"
 author: Glueyy
 date: 2026-06-15
-description: Concise/clean writeup of my solving for Arasaka Machine on hack smarter
+description: "Clean walkthrough of the Arasaka box on Hack Smarter."
 tags: ["Challenge"]
 ---
 

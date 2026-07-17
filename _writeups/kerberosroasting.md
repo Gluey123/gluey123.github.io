@@ -2,11 +2,11 @@
 title: "Intro to Kerberos Roasting & Active Directory Abuse"
 author: "Glueyy - Formatted with Gemini"
 date: 2026-06-15
-description: "Sample first writeup - Taken key points from the Hack Smarter Guided Lab: Kerberoasting."
-tags: ["Guided Lab"]
+description: "Kerberoasting explained end to end - how the protocol is abused, how to identify and crack roastable accounts, and why it works."
+tags: ["Guided Lab", "Kerberoasting"]
 ---
 
-This is a jumble of notes and key highlighted points taken and condensed for the Hack smarter lab: Guided Lab: Kerberoasting (Easy)
+This is a jumble of notes and key highlighted points taken and condensed for the Hack Smarter lab: Guided Lab: Kerberoasting (Easy)
 
 ### Core Kerberos Concepts
 

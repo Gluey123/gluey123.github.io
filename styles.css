@@ -185,7 +185,6 @@ header { margin-bottom: 2.6rem; }
   display: block;
   font-size: 0.7rem;
   letter-spacing: 0.05em;
-  text-transform: uppercase;
   color: var(--dim);
   margin-top: 0.35rem;
 }

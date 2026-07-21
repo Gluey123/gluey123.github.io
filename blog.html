@@ -1,18 +1,61 @@
 ---
 ---
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blog Colby</title>
+  <title>Blog | Colby</title>
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Immediately apply saved theme to prevent flickering
+    (function() {
+      const savedTheme = localStorage.getItem('colby-portfolio-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
 </head>
 <body>
 
+  <!-- Global Header Navigation -->
+  <header class="global-header">
+    <div class="header-container">
+      <a href="index.html" class="header-logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Colby<span class="accent-dot">.</span></span>
+      </a>
+      <nav class="header-nav" aria-label="Primary site navigation">
+        <a href="index.html" class="nav-item">Home</a>
+        <a href="writeups.html" class="nav-item">Writeups</a>
+        <a href="reports.html" class="nav-item">Reports</a>
+        <a href="blog.html" class="nav-item active">Blog</a>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode">
+        <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Ambient background -->
+  <div class="bg-texture"></div>
+
+  <!-- Main Content Page -->
   <main class="blog-page">
 
-    <a class="blog-back" href="index.html">← back</a>
+    <a class="blog-back" href="index.html">← back to home</a>
 
     <h1 class="blog-heading">Blog</h1>
 
@@ -27,6 +70,13 @@
             {% if post.description %}
             <span class="entry-desc">{{ post.description }}</span>
             {% endif %}
+            {% if post.tags %}
+            <span class="entry-tags">
+              {% for t in post.tags %}
+              <span class="entry-tags-item">{{ t }}</span>
+              {% endfor %}
+            </span>
+            {% endif %}
           </span>
         </a>
       </li>
@@ -36,6 +86,19 @@
     </ul>
 
   </main>
+
+  <!-- Global Footer -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="writeups.html">Writeups</a>
+        <a href="reports.html">Reports</a>
+        <a href="blog.html">Blog</a>
+      </div>
+      <p class="copyright">&copy; <span id="year">2026</span> Colby. All rights reserved.</p>
+    </div>
+  </footer>
 
   <script src="script.js"></script>
 </body>

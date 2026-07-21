@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Writeups | Colby</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Immediately apply saved theme to prevent flickering
+    (function() {
+      const savedTheme = localStorage.getItem('colby-portfolio-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- Global Header Navigation -->
+  <header class="global-header">
+    <div class="header-container">
+      <a href="index.html" class="header-logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Colby<span class="accent-dot">.</span></span>
+      </a>
+      <nav class="header-nav" aria-label="Primary site navigation">
+        <a href="index.html" class="nav-item">Home</a>
+        <a href="writeups.html" class="nav-item active">Writeups</a>
+        <a href="reports.html" class="nav-item">Reports</a>
+        <a href="blog.html" class="nav-item">Blog</a>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode">
+        <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Ambient background -->
+  <div class="bg-texture"></div>
+
+  <!-- Main Content Page -->
+  <main class="blog-page">
+
+    <a class="blog-back" href="index.html">← back to home</a>
+
+    <h1 class="blog-heading">Writeups</h1>
+
+
+
+
+
+
+    <div class="tag-filters" role="group" aria-label="Filter writeups by tag">
+      <button type="button" class="tag-filter active" data-tag="all">All</button>
+
+      <button type="button" class="tag-filter" data-tag="ad">AD</button>
+
+      <button type="button" class="tag-filter" data-tag="attack">Attack</button>
+
+      <button type="button" class="tag-filter" data-tag="challenge">Challenge</button>
+
+      <button type="button" class="tag-filter" data-tag="guided-lab">Guided Lab</button>
+
+      <button type="button" class="tag-filter" data-tag="idor">IDOR</button>
+
+      <button type="button" class="tag-filter" data-tag="kerberoasting">Kerberoasting</button>
+
+      <button type="button" class="tag-filter" data-tag="web-app">Web App</button>
+
+    </div>
+
+
+    <ul class="entry-list">
+      <li class="empty-entry tag-no-match" style="display:none;">No writeups match this tag.</li>
+
+
+
+      <li class="entry" data-tags="challenge ad web-app attack idor kerberoasting ">
+        <a class="entry-link" href="/writeups/bitstream-writeup.html">
+          <span class="entry-date">Jul 2026</span>
+          <span class="entry-body">
+            <span class="entry-title">Bitstream - Full Guide and Writeup</span>
+
+            <span class="entry-desc">Full internal AD compromise: stored XSS → IDOR → MSSQL RCE → SeImpersonate (GodPotato) → Kerberoasting → GenericAll abuse → DCSync to Domain Admin.</span>
+
+
+            <span class="entry-tags">
+
+              <span class="entry-tags-item">Challenge</span>
+
+              <span class="entry-tags-item">AD</span>
+
+              <span class="entry-tags-item">Web App</span>
+
+              <span class="entry-tags-item">Attack</span>
+
+              <span class="entry-tags-item">IDOR</span>
+
+              <span class="entry-tags-item">Kerberoasting</span>
+
+            </span>
+
+          </span>
+        </a>
+      </li>
+
+      <li class="entry" data-tags="ad challenge ">
+        <a class="entry-link" href="/writeups/lumons-writeup.html">
+          <span class="entry-date">Jul 2026</span>
+          <span class="entry-body">
+            <span class="entry-title">Lumons Hack Smarter - Concise Writeup</span>
+
+            <span class="entry-desc">Medium-rated Active Directory box - foothold to domain compromise on the Hack Smarter platform.</span>
+
+
+            <span class="entry-tags">
+
+              <span class="entry-tags-item">AD</span>
+
+              <span class="entry-tags-item">Challenge</span>
+
+            </span>
+
+          </span>
+        </a>
+      </li>
+
+      <li class="entry" data-tags="guided-lab ">
+        <a class="entry-link" href="/writeups/guided-bloodhound.html">
+          <span class="entry-date">Jun 2026</span>
+          <span class="entry-body">
+            <span class="entry-title">Guided Lab: Bloodhound</span>
+
+            <span class="entry-desc">Walking BloodHound's attack-path graphs - collection, Cypher queries, and reading edges to find the route to Domain Admin.</span>
+
+
+            <span class="entry-tags">
+
+              <span class="entry-tags-item">Guided Lab</span>
+
+            </span>
+
+          </span>
+        </a>
+      </li>
+
+      <li class="entry" data-tags="guided-lab kerberoasting ">
+        <a class="entry-link" href="/writeups/kerberosroasting.html">
+          <span class="entry-date">Jun 2026</span>
+          <span class="entry-body">
+            <span class="entry-title">Intro to Kerberos Roasting & Active Directory Abuse</span>
+
+            <span class="entry-desc">Kerberoasting explained end to end - how the protocol is abused, how to identify and crack roastable accounts, and why it works.</span>
+
+
+            <span class="entry-tags">
+
+              <span class="entry-tags-item">Guided Lab</span>
+
+              <span class="entry-tags-item">Kerberoasting</span>
+
+            </span>
+
+          </span>
+        </a>
+      </li>
+
+      <li class="entry" data-tags="challenge ">
+        <a class="entry-link" href="/writeups/challenge-lab-arasaka.html">
+          <span class="entry-date">Jun 2026</span>
+          <span class="entry-body">
+            <span class="entry-title">Challenge Lab: Arasaka (Easy)</span>
+
+            <span class="entry-desc">Clean walkthrough of the Arasaka box on Hack Smarter.</span>
+
+
+            <span class="entry-tags">
+
+              <span class="entry-tags-item">Challenge</span>
+
+            </span>
+
+          </span>
+        </a>
+      </li>
+
+    </ul>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="writeups.html">Writeups</a>
+        <a href="reports.html">Reports</a>
+        <a href="blog.html">Blog</a>
+      </div>
+      <p class="copyright">&copy; <span id="year">2026</span> Colby. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

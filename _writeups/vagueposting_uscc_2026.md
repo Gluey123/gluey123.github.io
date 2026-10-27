@@ -14,19 +14,15 @@ tags:
   - CTF
 ---
   
-  
-  
-  
-  
 This will be a somewhat condensed writeup for the web challenge VaguePosting.  
   
 **Short version:** the site lets you save an away message that is fed straight into a server-side template engine (Lodash). Because we control the template text, we can inject template code that the server runs for us and it leads to full command execution on the box.  
   
 We start on a webpage looking like the picture below:  
-![VaguePosting - USCC - WEB-1784930938454](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784930938454.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784930938454.webp|VaguePosting - USCC - WEB-1784930938454.webp]]  
   
 Pressing the buttons does nothing except the `away` button, which lets you type a message and upload it to the site. That upload is our one piece of user input, so it's the first thing worth investigating.  
-![VaguePosting - USCC - WEB-1784937414898](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784937414898.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784937414898.webp|VaguePosting - USCC - WEB-1784937414898.webp]]  
   
 Next, read the page source to see exactly how it handles the input for `away`:  
   
@@ -57,19 +53,19 @@ The main things we learn from this:
 The word "template" is big here since the server isn't just storing our text, it's rendering it as a template. If we can figure out which template engine it uses, we can look up how to abuse it.  
   
 The POST for this request is seen below:  
-![VaguePosting - USCC - WEB-1784928571772](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784928571772.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784928571772.webp|VaguePosting - USCC - WEB-1784928571772.webp]]  
   
 When checking `/robots.txt` we get an endpoint that reveals the location of service versions.    
-![VaguePosting - USCC - WEB-1784937471164](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784937471164.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784937471164.webp|VaguePosting - USCC - WEB-1784937471164.webp]]  
   
 By checking that endpoint we get the following versions:  
-![VaguePosting - USCC - WEB-1784930057560](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784930057560.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784930057560.webp|VaguePosting - USCC - WEB-1784930057560.webp]]  
   
 Knowing the exact library and version matters, because it lets us search for the specific way that version can be exploited.  
   
 Since we already saw templates being used in the POST request, a good next step is to research how **Lodash** handles templates. (Lodash is a very common JavaScript utility library; one of its features, `_.template`, turns a string into a rendered output  and that feature can be abused.)  
   
-![VaguePosting - USCC - WEB-1784929963940](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784929963940.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784929963940.webp|VaguePosting - USCC - WEB-1784929963940.webp]]  
   
 Now we know the server likely uses Lodash's `_.template(string)`:  
   
@@ -87,7 +83,7 @@ Either way, if we control the template string we control the JavaScript that run
   
   
 We can start crafting our request from a few things  
-![VaguePosting - USCC - WEB-1784934128537](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784934128537.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784934128537.webp|VaguePosting - USCC - WEB-1784934128537.webp]]  
   
   
 Also to run OS command in nodejs we need   
@@ -99,7 +95,7 @@ We can now test this by POSTing to our specific version of the API and putting a
 As noted above, we use the interpolate delimiter `<%= %>` (not the silent `<% %>` evaluate one) so our command's output is printed back to us in the response.  
   
 Initially we see that you need to define "require"  
-![VaguePosting - USCC - WEB-1784934710812](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784934710812.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784934710812.webp|VaguePosting - USCC - WEB-1784934710812.webp]]  
   
 We need to use the following below instead  
 ```  
@@ -112,18 +108,18 @@ this leaves us with the following to inject
 ```  
   
 POST /api/lodash-4.17.20/template`  
-![VaguePosting - USCC - WEB-1784935694643](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784935694643.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784935694643.webp|VaguePosting - USCC - WEB-1784935694643.webp]]  
   
 The above POST request results in the output below, confirming we have command injection (our injected code ran on the server and returned its result):  
-![VaguePosting - USCC - WEB-1784931116684](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784931116684.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784931116684.webp|VaguePosting - USCC - WEB-1784931116684.webp]]  
   
 From here we can run commands until we find our flag.  
   
 Our request:  
-![VaguePosting - USCC - WEB-1784935787436](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784935787436.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784935787436.webp|VaguePosting - USCC - WEB-1784935787436.webp]]  
   
 Our response ending with the flag  
-![VaguePosting - USCC - WEB-1784932053410](../assets/uploads/VaguePosting%20-%20USCC%20-%20WEB-1784932053410.webp)  
+![[../assets/uploads/VaguePosting - USCC - WEB-1784932053410.webp|VaguePosting - USCC - WEB-1784932053410.webp]]  
   
   
 Usefull resource to learn more  

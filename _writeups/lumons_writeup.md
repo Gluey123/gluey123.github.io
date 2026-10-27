@@ -4,10 +4,9 @@ slug: lumons_writeup
 category: _writeups
 share: true
 date: 2026-07-02
-description: "Medium-rated Active Directory box - foothold to domain compromise on the Hack Smarter platform."
+description: This is a Concise writeup for the Medium Rated Lumons box in Hacksmarter
 tags:
   - AD
-  - Challenge
 ---
   
   
@@ -86,7 +85,7 @@ Ran `Certipy-ad` as hellyr and found no vulnerable certificate templates from th
 Found the **MDRepo** share on INTRANET is writable by hellyr.   
   
 Bloodhound revealed HARMONYc has a session to the intranet machine that holds a writeable SMB share  
-![Lumons Hack Smarter - Concise Writeup-1783032054166](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783032054166.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783032054166.webp|Lumons Hack Smarter - Concise Writeup-1783032054166.webp]]  
   
   
   
@@ -126,11 +125,11 @@ smb: \> put xd.library-ms
 ```  
   
 Caught HARMONYC's NTLMv2 hash:  
-![Lumons Hack Smarter - Concise Writeup-1783033310841](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783033310841.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783033310841.webp|Lumons Hack Smarter - Concise Writeup-1783033310841.webp]]  
   
 Cracked it:  
   
-![Lumons Hack Smarter - Concise Writeup-1783031672322](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783031672322.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783031672322.webp|Lumons Hack Smarter - Concise Writeup-1783031672322.webp]]  
   
   
   
@@ -152,10 +151,10 @@ Command passed into the ping IP field
 ```  
   
 Responder getting the hash!  
-![Lumons Hack Smarter - Concise Writeup-1783032233359](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783032233359.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783032233359.webp|Lumons Hack Smarter - Concise Writeup-1783032233359.webp]]  
   
  **intranetsvc** NTLMv2 hash. Cracked it to get:  
-![Lumons Hack Smarter - Concise Writeup-1783032274002](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783032274002.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783032274002.webp|Lumons Hack Smarter - Concise Writeup-1783032274002.webp]]  
   
 ---  
   
@@ -178,7 +177,7 @@ nxc smb 10.1.206.202 -u MarkS -p 'P@ssw0rd' -d lumons.hacksmarter
 **New creds I set:** `MarkS:P@ssw0rd`  
   
 This allows us to get the user flag!  
-![Lumons Hack Smarter - Concise Writeup-1783032331112](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783032331112.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783032331112.webp|Lumons Hack Smarter - Concise Writeup-1783032331112.webp]]  
   
   
 ---  
@@ -192,7 +191,7 @@ The `Get-LapsADPassword` cmdlet kept failing from the INTRANET box due to LDAP c
 ```  
 bloodyAD -d lumons.hacksmarter -u MarkS -p 'P@ssw0rd' --host 10.1.206.202 get search --filter '(cn=INTRANET)' --attr msLAPS-EncryptedPassword  
 ```  
-![Lumons Hack Smarter - Concise Writeup-1783032522469](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783032522469.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783032522469.webp|Lumons Hack Smarter - Concise Writeup-1783032522469.webp]]  
   
   
 Then decrypted it with `dpapi-ng` from Kali:  
@@ -214,10 +213,10 @@ print(plaintext.decode("utf-16-le"))
 ```  
   
 Giving us this beautiful part of the command   
-![Lumons Hack Smarter - Concise Writeup-1783032646001](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783032646001.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783032646001.webp|Lumons Hack Smarter - Concise Writeup-1783032646001.webp]]  
   
 then resulting decrypted password!  
-![Lumons Hack Smarter - Concise Writeup-1783032735555](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783032735555.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783032735555.webp|Lumons Hack Smarter - Concise Writeup-1783032735555.webp]]  
   
   
   
@@ -236,16 +235,16 @@ xfreerdp3 /v:10.1.200.200 /u:localadmin /p:password /cert-ignore +dynamic-resolu
   
 From an elevated PowerShell prompt, saved the registry hives:  
   
-![Lumons Hack Smarter - Concise Writeup-1783032853820](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783032853820.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783032853820.webp|Lumons Hack Smarter - Concise Writeup-1783032853820.webp]]  
   
 Copied them to the MDRepo share, pulled to Kali, and extracted:  
   
-![Lumons Hack Smarter - Concise Writeup-1783033409389](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783033409389.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783033409389.webp|Lumons Hack Smarter - Concise Writeup-1783033409389.webp]]  
   
   
 Cracked hellye's DCC2 hash:  
   
-![Lumons Hack Smarter - Concise Writeup-1783033428133](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783033428133.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783033428133.webp|Lumons Hack Smarter - Concise Writeup-1783033428133.webp]]  
   
 ---  
   
@@ -259,11 +258,11 @@ runas /user:lumons.hacksmarter\hellye powershell
   
 From the new elevated window, remoted into the DC:  
   
-![Lumons Hack Smarter - Concise Writeup-1783033529429](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783033529429.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783033529429.webp|Lumons Hack Smarter - Concise Writeup-1783033529429.webp]]  
   
 and retrieve the root flag!  
   
-![Lumons Hack Smarter - Concise Writeup-1783033546515](../assets/uploads/Lumons%20Hack%20Smarter%20-%20Concise%20Writeup-1783033546515.webp)  
+![[../assets/uploads/Lumons Hack Smarter - Concise Writeup-1783033546515.webp|Lumons Hack Smarter - Concise Writeup-1783033546515.webp]]  
   
   
 ---  
